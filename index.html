@@ -232,6 +232,18 @@
         </div>
       </div>
     </div>
+    <div id="home-review-errors-section" style="display:none;margin-bottom:28px">
+      <div class="big-card" style="cursor:pointer;border-left:4px solid var(--error)" onclick="startReviewErrors()">
+        <div class="card-icon">🔴</div>
+        <div class="card-title" style="color:var(--error)">Ripasso Errori</div>
+        <div class="card-desc">Ripassi le domande che hai sbagliato. Rispondendo correttamente, vengono automaticamente rimosse dalla lista.</div>
+        <div class="card-meta">
+          <span class="meta-pill" id="home-review-pill-count">0 domande</span>
+          <span class="meta-pill">Senza limite di tempo</span>
+          <span class="meta-pill">🧹 Auto-pulizia</span>
+        </div>
+      </div>
+    </div>
     <div class="section-title" style="font-size:1.15rem;margin-bottom:6px">I tuoi progressi</div>
     <div class="section-sub">Salvati sul tuo dispositivo</div>
     <div class="stats-row">
@@ -325,6 +337,7 @@
     <div class="divider"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn btn-outline" onclick="showWeakQuestions()">⚠️ Domande sbagliate spesso</button>
+      <button class="btn btn-primary" id="btn-start-review-errors" onclick="startReviewErrors()" style="background:var(--error);border-color:var(--error);display:none">🔴 Avvia Ripasso Errori (<span id="stats-review-count">0</span>)</button>
       <button class="btn btn-danger" onclick="confirmReset()">🗑 Reset progressi</button>
     </div>
     <div id="weak-section" style="display:none;margin-top:24px">
@@ -397,6 +410,14 @@ function refreshHome() {
   document.getElementById('hs-seen').textContent = Object.keys(p.seen).length;
   document.getElementById('hs-sims').textContent = p.history.length;
   document.getElementById('hs-pass').textContent = p.history.filter(h => h.passed).length;
+  // Ripasso errori card
+  const wrongCount = Object.keys(p.wrong).length;
+  const reviewSection = document.getElementById('home-review-errors-section');
+  if (reviewSection) {
+    reviewSection.style.display = wrongCount > 0 ? '' : 'none';
+    const pill = document.getElementById('home-review-pill-count');
+    if (pill) pill.textContent = wrongCount + ' domand' + (wrongCount === 1 ? 'a' : 'e');
+  }
 }
 
 // ── CAT GRID ──
@@ -472,6 +493,28 @@ function startRetryWrong(wrongNums) {
   renderQuiz();
 }
 
+// ── RIPASSO ERRORI ──
+function startReviewErrors() {
+  const p = loadProgress();
+  // Ordina per numero di errori: prima le domande sbagliate di più
+  const wrongEntries = Object.entries(p.wrong).sort((a, b) => b[1] - a[1]);
+  const wrongNums = wrongEntries.map(([n]) => parseInt(n));
+  if (wrongNums.length === 0) {
+    showToast('Nessun errore da ripassare! 🎉');
+    return;
+  }
+  const pool = ALL_QUESTIONS.filter(q => wrongNums.includes(q.num));
+  // Mantieni ordine: prima le peggiori
+  pool.sort((a, b) => (p.wrong[b.num] || 0) - (p.wrong[a.num] || 0));
+  quiz.questions = pool;
+  quiz.answers = {}; quiz.mode = 'review_errors'; quiz.cat = null;
+  quiz.current = 0; quiz.submitted = false;
+  clearInterval(quiz.timerInterval); quiz.timerInterval = null;
+  showScreen('quiz');
+  document.getElementById('timer-box').style.display = 'none';
+  renderQuiz();
+}
+
 // ── TIMER ──
 function startTimer() {
   clearInterval(quiz.timerInterval);
@@ -500,7 +543,9 @@ function renderQuiz() {
   const total = quiz.questions.length;
   const idx = quiz.current;
 
-  const titles = { official: '🎯 Simulazione Esame Ufficiale', practice: `📚 ${CATEGORIES[quiz.cat]?.name || 'Esercitazione'}`, retry: '🔁 Ripetizione Errori' };
+  const p = loadProgress();
+  const reviewErrCount = Object.keys(p.wrong).length;
+  const titles = { official: '🎯 Simulazione Esame Ufficiale', practice: `📚 ${CATEGORIES[quiz.cat]?.name || 'Esercitazione'}`, retry: '🔁 Ripetizione Errori', review_errors: `🔴 Ripasso Errori` };
   document.getElementById('quiz-mode-title').textContent = titles[quiz.mode] || 'Quiz';
   document.getElementById('q-counter').textContent = `Domanda ${idx + 1} di ${total}`;
   document.getElementById('q-ref').textContent = q.ref;
@@ -617,8 +662,17 @@ function submitQuiz(timeout) {
   const p = loadProgress();
   quiz.questions.forEach((q, i) => {
     p.seen[q.num] = (p.seen[q.num] || 0) + 1;
-    if (quiz.answers[i] && quiz.answers[i] !== q.answer) {
-      p.wrong[q.num] = (p.wrong[q.num] || 0) + 1;
+    if (quiz.mode === 'review_errors') {
+      // Ripasso errori: se risposta corretta → rimuovi da wrong, se sbagliata → incrementa
+      if (quiz.answers[i] === q.answer) {
+        delete p.wrong[q.num]; // rimossa dalla lista errori!
+      } else {
+        p.wrong[q.num] = (p.wrong[q.num] || 0) + 1;
+      }
+    } else {
+      if (quiz.answers[i] && quiz.answers[i] !== q.answer) {
+        p.wrong[q.num] = (p.wrong[q.num] || 0) + 1;
+      }
     }
   });
   if (quiz.mode === 'official' || quiz.mode === 'retry') {
@@ -665,7 +719,24 @@ function showResults(correct, total, passed, catResults, timeout) {
   });
 
   const wrongNums = quiz.questions.filter((q, i) => quiz.answers[i] !== q.answer).map(q => q.num);
-  document.getElementById('btn-retry-wrong').style.display = wrongNums.length > 0 ? '' : 'none';
+  document.getElementById('btn-retry-wrong').style.display = (wrongNums.length > 0 && quiz.mode !== 'review_errors') ? '' : 'none';
+  // Se siamo in ripasso errori, mostra quante ne abbiamo rimossa
+  if (quiz.mode === 'review_errors') {
+    const pAfter = loadProgress();
+    const remainingErrors = Object.keys(pAfter.wrong).length;
+    const cleared = quiz.questions.filter((q, i) => quiz.answers[i] === q.answer).length;
+    let infoMsg = '';
+    if (cleared > 0) infoMsg = `✅ ${cleared} domand${cleared === 1 ? 'a rimossa' : 'e rimosse'} dalla lista errori!`;
+    if (remainingErrors > 0) infoMsg += (infoMsg ? ' ' : '') + `🔴 ${remainingErrors} errori ancora da ripassare.`;
+    if (!infoMsg) infoMsg = '🎉 Tutti gli errori risolti!';
+    document.getElementById('res-detail').textContent = infoMsg;
+    if (remainingErrors > 0) {
+      const retryEl = document.getElementById('btn-retry-wrong');
+      retryEl.textContent = '🔴 Continua Ripasso Errori';
+      retryEl.style.display = '';
+      retryEl.onclick = () => startReviewErrors();
+    }
+  }
 }
 
 function showReview() {
@@ -718,6 +789,14 @@ function refreshStats() {
     hist.innerHTML = `<div style="overflow-x:auto"><table class="history-table"><thead><tr><th>Data</th><th>Punteggio</th><th>%</th><th>Esito</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
   document.getElementById('weak-section').style.display = 'none';
+  // Ripasso errori nella sezione stats
+  const wrongCount = Object.keys(p.wrong).length;
+  const btnReview = document.getElementById('btn-start-review-errors');
+  if (btnReview) {
+    btnReview.style.display = wrongCount > 0 ? '' : 'none';
+    const countEl = document.getElementById('stats-review-count');
+    if (countEl) countEl.textContent = wrongCount;
+  }
 }
 
 function showWeakQuestions() {
