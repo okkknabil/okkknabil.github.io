@@ -1299,7 +1299,7 @@ async function saveProfile() {
   const errEl    = document.getElementById('prof-err');
 
   if (!nome || !cognome || !prov || !eta) {
-    errEl.textContent = 'Compila almeno Nome, Cognome, Provincia e Fascia d'età.';
+    errEl.textContent = "Compila almeno Nome, Cognome, Provincia e Fascia d\u2019et\u00e0.";
     errEl.classList.add('show'); return;
   }
   errEl.classList.remove('show');
