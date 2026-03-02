@@ -1541,7 +1541,7 @@ async function exportCSV() {
 
   const csv = [header.join(','), ...rows].join('
 ');
-  const blob = new Blob(['﻿'+csv], { type: 'text/csv;charset=utf-8' });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href = url; a.download = `quiz-venezia-utenti-${new Date().toISOString().slice(0,10)}.csv`;
