@@ -1229,14 +1229,17 @@ async function doLogin() {
   setLoginLoading(true);
   try {
     const email = usernameToEmail(username);
-    await signInWithEmailAndPassword(auth, email, password);
+    console.log('[LOGIN] Tentativo con email:', email);
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    console.log('[LOGIN] Successo:', cred.user.uid);
     // onAuthStateChanged gestisce il resto
   } catch(e) {
     setLoginLoading(false);
+    console.error('[LOGIN] Errore:', e.code, e.message);
     if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
       showLoginError('Username o password errati.');
     } else {
-      showLoginError('Errore di connessione. Riprova.');
+      showLoginError('Errore: ' + e.code);
     }
   }
 };
@@ -1251,6 +1254,7 @@ document.getElementById('login-username').addEventListener('keydown', e => {
 
 // ── AUTH STATE ──
 onAuthStateChanged(auth, async (user) => {
+  console.log('[AUTH STATE]', user ? user.email : 'null');
   if (!user) {
     // Non loggato → mostra overlay login
     currentUser = null; currentProfile = null; isAdmin = false;
@@ -1264,6 +1268,7 @@ onAuthStateChanged(auth, async (user) => {
 
   currentUser = user;
   isAdmin = (user.email === ADMIN_EMAIL);
+  console.log('[AUTH STATE] isAdmin:', isAdmin, '| email:', user.email, '| ADMIN_EMAIL:', ADMIN_EMAIL);
 
   // Carica profilo da Firestore
   const profileRef = doc(db, 'users', user.uid);
