@@ -326,7 +326,7 @@
     <nav class="header-nav">
       <button class="nav-btn active" onclick="showScreen('home')"><span class="nav-icon">🏠</span><span class="nav-label"> Home</span></button>
       <button class="nav-btn" onclick="showScreen('stats')"><span class="nav-icon">📊</span><span class="nav-label"> Progressi</span></button>
-      <button class="user-chip" id="user-chip" style="display:none">👤 <span id="user-chip-name"></span></button>
+      <button class="user-chip" id="user-chip" style="display:none"> <span id="user-chip-name"></span></button>
     </nav>
   </div>
 </header>
@@ -387,7 +387,7 @@
   <div id="screen-admin" class="screen">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
       <div>
-        <div class="section-title" style="font-size:1.4rem">🛡️ Pannello Admin</div>
+        <div class="section-title" style="font-size:1.4rem"> Pannello Admin</div>
         <div class="section-sub">Gestione utenti e credenziali</div>
       </div>
       <button class="btn btn-outline" onclick="showScreen('home')">← Torna alla home</button>
@@ -395,7 +395,7 @@
     <div class="admin-tabs">
       <button class="admin-tab active" onclick="adminTab('users')">👥 Utenti</button>
       <button class="admin-tab" onclick="adminTab('credentials')">🔑 Genera credenziali</button>
-      <button class="admin-tab" onclick="adminTab('export')">📥 Export</button>
+      <button class="admin-tab" onclick="adminTab('export')"> Export</button>
     </div>
 
     <!-- TAB UTENTI -->
@@ -441,7 +441,7 @@
             <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;margin-bottom:4px">PASSWORD</div>
             <strong id="cred-password"></strong>
           </div>
-          <button class="btn btn-outline" onclick="copyCreds()" style="flex-shrink:0">📋 Copia</button>
+          <button class="btn btn-outline" onclick="copyCreds()" style="flex-shrink:0"> Copia</button>
         </div>
         <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
           <div class="card-title" style="font-size:1rem;margin-bottom:12px">Credenziali generate in questa sessione</div>
@@ -455,7 +455,7 @@
       <div class="big-card" style="max-width:520px">
         <div class="card-title" style="margin-bottom:8px">Export dati utenti</div>
         <div class="card-desc" style="margin-bottom:20px">Scarica un file CSV con tutti i dati di profilo e le statistiche di utilizzo di ogni utente.</div>
-        <button class="btn btn-primary" onclick="exportCSV()">📥 Scarica CSV completo</button>
+        <button class="btn btn-primary" onclick="exportCSV()"> Scarica CSV completo</button>
         <div style="margin-top:12px;font-size:0.82rem;color:var(--text-muted)">
           Il CSV include: username, nome, cognome, email, telefono, provincia, età, simulazioni totali, promozioni, ultima attività.
         </div>
@@ -551,7 +551,7 @@
     <div class="section-title" style="font-size:1.1rem;margin-bottom:14px">Risultato per materia</div>
     <div class="cat-stats-grid" id="cat-stats-grid"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
-      <button class="btn btn-primary" onclick="showReview()">📋 Rivedi tutte le domande</button>
+      <button class="btn btn-primary" onclick="showReview()"> Rivedi tutte le domande</button>
       <button class="btn btn-danger" id="btn-retry-wrong" onclick="retryWrong()">🔁 Ripeti gli errori</button>
       <button class="btn btn-gold" onclick="showScreen('section')">🎯 Nuova simulazione</button>
       <button class="btn btn-outline" onclick="showScreen('home')">🏠 Home</button>
@@ -581,7 +581,7 @@
     <div id="history-container"><div class="empty-state"><div class="emoji">📭</div><p>Nessuna simulazione ancora completata.</p></div></div>
     <div class="divider"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-outline" onclick="showWeakQuestions()">⚠️ Domande sbagliate spesso</button>
+      <button class="btn btn-outline" onclick="showWeakQuestions()">⚠ Domande sbagliate spesso</button>
       <button class="btn btn-primary" id="btn-start-review-errors" onclick="startReviewErrors()" style="background:var(--error);border-color:var(--error);display:none">🔴 Avvia Ripasso Errori (<span id="stats-review-count">0</span>)</button>
       <button class="btn btn-danger" onclick="confirmReset()">🗑 Reset progressi</button>
     </div>
@@ -615,7 +615,7 @@ const CATEGORIES = {
   C: { name: 'Lavoro, Fisco e Previdenza', icon: '💼', color: '#0d9488', bg: '#d0faf4' },
   D: { name: 'Legislazione Trasporti', icon: '🚕', color: '#c05a1a', bg: '#fde8d8' },
   E: { name: 'Disabilità e Accessibilità', icon: '♿', color: '#1a7a4a', bg: '#d4edda' },
-  G: { name: 'Toponomastica e Geografia', icon: '🗺️', color: '#b45309', bg: '#fef3c7' },
+  G: { name: 'Toponomastica e Geografia', icon: '🗺', color: '#b45309', bg: '#fef3c7' },
   H: { name: 'Primo Soccorso', icon: '🏥', color: '#b91c1c', bg: '#fde8e8' },
 };
 
@@ -992,7 +992,7 @@ function showResults(correct, total, passed, catResults, timeout) {
   const pct = Math.round(correct / total * 100);
   document.getElementById('res-score').textContent = `${correct}/${total}`;
   document.getElementById('res-pct').textContent = pct + '%';
-  document.getElementById('res-verdict').textContent = passed ? '✅ Promosso!' : '❌ Non Sufficiente';
+  document.getElementById('res-verdict').textContent = passed ? ' Promosso!' : ' Non Sufficiente';
   document.getElementById('res-verdict').className = 'result-verdict ' + (passed ? 'pass' : 'fail');
   document.getElementById('score-ring-arc').style.stroke = passed ? 'var(--success)' : 'var(--error)';
   document.getElementById('res-detail').textContent = (timeout ? 'Tempo scaduto — ' : '') + `${correct} risposta${correct === 1 ? '' : 'e'} corretta${correct === 1 ? '' : 'e'} su ${total}. Soglia: ${Math.ceil(total * 0.8)}/${total}`;
@@ -1023,7 +1023,7 @@ function showResults(correct, total, passed, catResults, timeout) {
     const remainingErrors = Object.keys(pAfter.wrong).length;
     const cleared = quiz.questions.filter((q, i) => quiz.answers[i] === q.answer).length;
     let infoMsg = '';
-    if (cleared > 0) infoMsg = `✅ ${cleared} domand${cleared === 1 ? 'a rimossa' : 'e rimosse'} dalla lista errori!`;
+    if (cleared > 0) infoMsg = ` ${cleared} domand${cleared === 1 ? 'a rimossa' : 'e rimosse'} dalla lista errori!`;
     if (remainingErrors > 0) infoMsg += (infoMsg ? ' ' : '') + `🔴 ${remainingErrors} errori ancora da ripassare.`;
     if (!infoMsg) infoMsg = '🎉 Tutti gli errori risolti!';
     document.getElementById('res-detail').textContent = infoMsg;
@@ -1109,7 +1109,7 @@ function showWeakQuestions() {
       if (!q) return;
       const div = document.createElement('div');
       div.className = 'review-item wrong-item';
-      div.innerHTML = `<div class="review-q-num">N.${q.num} — ${q.ref} — ⚠️ Sbagliata ${p.wrong[num]} volte</div>
+      div.innerHTML = `<div class="review-q-num">N.${q.num} — ${q.ref} — ⚠ Sbagliata ${p.wrong[num]} volte</div>
         <div class="review-q-text">${q.text}</div>
         ${q.options.map((opt, oi) => `<div class="review-opt ${oi + 1 === q.answer ? 'correct-opt' : 'neutral-opt'}">${oi + 1 === q.answer ? '✓ ' : ''}${opt}</div>`).join('')}`;
       list.appendChild(div);
@@ -1332,7 +1332,7 @@ function enterApp() {
   const chip = document.getElementById('user-chip');
   chip.style.display = '';
   document.getElementById('user-chip-name').textContent =
-    isAdmin ? '🛡️ Admin' : (currentProfile?.nome || currentProfile?.username || '');
+    isAdmin ? ' Admin' : (currentProfile?.nome || currentProfile?.username || '');
 
   if (isAdmin) {
     // Admin va direttamente al pannello
@@ -1349,10 +1349,10 @@ function enterApp() {
 //  CHIP MENU (logout / admin) 
 function userChipMenu() {
   const items = isAdmin
-    ? [{ label: '🛡️ Pannello Admin', action: () => { showScreen('admin'); adminLoadUsers(); } },
-       { label: '🚪 Logout', action: doLogout }]
-    : [{ label: `👤 ${currentProfile?.nome || ''} ${currentProfile?.cognome || ''}`, action: ()=>{} },
-       { label: '🚪 Logout', action: doLogout }];
+    ? [{ label: ' Pannello Admin', action: () => { showScreen('admin'); adminLoadUsers(); } },
+       { label: ' Logout', action: doLogout }]
+    : [{ label: ` ${currentProfile?.nome || ''} ${currentProfile?.cognome || ''}`, action: ()=>{} },
+       { label: ' Logout', action: doLogout }];
 
   showModal(
     isAdmin ? 'Menu Admin' : 'Account',
@@ -1514,9 +1514,9 @@ async function generateCredentials() {
       <span style="color:var(--text-muted);margin-left:8px">${new Date().toLocaleTimeString('it-IT')}</span>
     </div>` + hist.innerHTML;
 
-    showToast('✅ Utenza creata!');
+    showToast(' Utenza creata!');
   } catch(e) {
-    showToast('❌ Errore: ' + e.message);
+    showToast(' Errore: ' + e.message);
   }
 };
 
@@ -1524,7 +1524,7 @@ function copyCreds() {
   const u = document.getElementById('cred-username').textContent;
   const p = document.getElementById('cred-password').textContent;
   navigator.clipboard.writeText(`Username: ${u}
-Password: ${p}`).then(() => showToast('📋 Copiato!'));
+Password: ${p}`).then(() => showToast(' Copiato!'));
 };
 
 //  EXPORT CSV 
@@ -1539,14 +1539,13 @@ async function exportCSV() {
     u.createdAt ? u.createdAt.toLocaleDateString('it-IT') : '',
   ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
 
-  const csv = [header.join(','), ...rows].join('
-');
+  const csv = [header.join(','), ...rows].join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href = url; a.download = `quiz-venezia-utenti-${new Date().toISOString().slice(0,10)}.csv`;
   a.click(); URL.revokeObjectURL(url);
-  showToast('📥 Export scaricato!');
+  showToast(' Export scaricato!');
 };
 
 //  AGGANCIO EVENTI (fix module scope) 
@@ -1568,4 +1567,5 @@ window.userChipMenu = userChipMenu;
 
 </script>
 </body>
+</html
 </html>
