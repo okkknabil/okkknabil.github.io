@@ -266,7 +266,7 @@
         <label class="form-label">Password</label>
         <input class="form-input" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" />
       </div>
-      <button class="auth-btn" id="login-btn" onclick="doLogin()">Accedi</button>
+      <button class="auth-btn" id="login-btn">Accedi</button>
     </div>
 
     <!-- STEP 2: PROFILO (primo accesso) -->
@@ -311,7 +311,7 @@
         </div>
       </div>
       <div class="form-error" id="prof-err"></div>
-      <button class="auth-btn" id="prof-btn" onclick="saveProfile()">Salva e inizia</button>
+      <button class="auth-btn" id="prof-btn">Salva e inizia</button>
     </div>
   </div>
 </div>
@@ -326,7 +326,7 @@
     <nav class="header-nav">
       <button class="nav-btn active" onclick="showScreen('home')"><span class="nav-icon">🏠</span><span class="nav-label"> Home</span></button>
       <button class="nav-btn" onclick="showScreen('stats')"><span class="nav-icon">📊</span><span class="nav-label"> Progressi</span></button>
-      <button class="user-chip" id="user-chip" onclick="userChipMenu()" style="display:none">👤 <span id="user-chip-name"></span></button>
+      <button class="user-chip" id="user-chip" style="display:none">👤 <span id="user-chip-name"></span></button>
     </nav>
   </div>
 </header>
@@ -1221,7 +1221,7 @@ function usernameToEmail(u) {
 }
 
 // ── LOGIN ──
-window.doLogin = async function() {
+async function doLogin() {
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
   clearLoginError();
@@ -1284,7 +1284,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // ── SALVA PROFILO ──
-window.saveProfile = async function() {
+async function saveProfile() {
   const nome     = document.getElementById('prof-nome').value.trim();
   const cognome  = document.getElementById('prof-cognome').value.trim();
   const email    = document.getElementById('prof-email').value.trim();
@@ -1342,7 +1342,7 @@ function enterApp() {
 }
 
 // ── CHIP MENU (logout / admin) ──
-window.userChipMenu = function() {
+function userChipMenu() {
   const items = isAdmin
     ? [{ label: '🛡️ Pannello Admin', action: () => { showScreen('admin'); adminLoadUsers(); } },
        { label: '🚪 Logout', action: doLogout }]
@@ -1399,7 +1399,7 @@ function overrideProgressFunctions() {
 }
 
 // ── ADMIN: CARICA UTENTI ──
-window.adminLoadUsers = async function() {
+async function adminLoadUsers() {
   window._adminUsers = [];
   const tbody = document.getElementById('admin-users-body');
   tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">Caricamento...</td></tr>';
@@ -1436,7 +1436,7 @@ window.adminLoadUsers = async function() {
   }
 };
 
-window.adminRenderUsers = function() {
+function adminRenderUsers() {
   const search = (document.getElementById('admin-search')?.value || '').toLowerCase();
   const prov   = document.getElementById('admin-filter-prov')?.value || '';
   const users  = (window._adminUsers || []).filter(u => {
@@ -1470,7 +1470,7 @@ window.adminRenderUsers = function() {
 };
 
 // ── ADMIN TABS ──
-window.adminTab = function(tab) {
+function adminTab(tab) {
   ['users','credentials','export'].forEach(t => {
     document.getElementById('admin-tab-'+t).style.display = t === tab ? '' : 'none';
   });
@@ -1481,7 +1481,7 @@ window.adminTab = function(tab) {
 };
 
 // ── GENERA CREDENZIALI ──
-window.generateCredentials = async function() {
+async function generateCredentials() {
   const prefix = document.getElementById('cred-prefix').value.trim()
     .toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
   const rand   = Math.random().toString(36).slice(2, 7);
@@ -1515,7 +1515,7 @@ window.generateCredentials = async function() {
   }
 };
 
-window.copyCreds = function() {
+function copyCreds() {
   const u = document.getElementById('cred-username').textContent;
   const p = document.getElementById('cred-password').textContent;
   navigator.clipboard.writeText(`Username: ${u}
@@ -1523,7 +1523,7 @@ Password: ${p}`).then(() => showToast('📋 Copiato!'));
 };
 
 // ── EXPORT CSV ──
-window.exportCSV = async function() {
+async function exportCSV() {
   await adminLoadUsers();
   const users = window._adminUsers || [];
   const header = ['Username','Nome','Cognome','Email','Telefono','Provincia','Età','Simulazioni','Promozioni','Ultima attività','Registrazione'];
@@ -1544,10 +1544,22 @@ window.exportCSV = async function() {
   showToast('📥 Export scaricato!');
 };
 
-// ── SALVA PASSWORD ADMIN IN MEMORIA ──
+// ── AGGANCIO EVENTI (fix module scope) ──
 document.getElementById('login-btn').addEventListener('click', () => {
   window._adminPassword = document.getElementById('login-password').value;
-}, true);
+  doLogin();
+});
+document.getElementById('prof-btn').addEventListener('click', saveProfile);
+document.getElementById('user-chip').addEventListener('click', userChipMenu);
+
+// Rendi accessibili globalmente le funzioni chiamate dall'HTML del quiz (admin panel)
+window.adminTab = adminTab;
+window.adminLoadUsers = adminLoadUsers;
+window.adminRenderUsers = adminRenderUsers;
+window.generateCredentials = generateCredentials;
+window.copyCreds = copyCreds;
+window.exportCSV = exportCSV;
+window.userChipMenu = userChipMenu;
 
 </script>
 </body>
