@@ -267,6 +267,9 @@
         <input class="form-input" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" />
       </div>
       <button class="auth-btn" id="login-btn">Accedi</button>
+      <div style="text-align:center;margin-top:14px">
+        <a href="#" id="forgot-link" style="font-size:0.82rem;color:var(--blue-light);text-decoration:none">Password dimenticata?</a>
+      </div>
     </div>
 
     <!-- STEP 2: PROFILO (primo accesso) -->
@@ -415,7 +418,7 @@
         <table class="admin-table" id="admin-users-table">
           <thead><tr>
             <th>Username</th><th>Nome</th><th>Email</th><th>Tel</th>
-            <th>Provincia</th><th>Età</th><th>Simulazioni</th><th>Promosso</th><th>Ultima attività</th>
+            <th>Provincia</th><th>Età</th><th>Simulazioni</th><th>Promosso</th><th>Ultima attività</th><th>Azioni</th>
           </tr></thead>
           <tbody id="admin-users-body">
             <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">Caricamento...</td></tr>
@@ -1217,7 +1220,9 @@ function clearLoginError() {
 
 //  USERNAME  EMAIL 
 function usernameToEmail(u) {
-  return u.trim().toLowerCase().replace(/\s+/g,'') + DOMAIN_FAKE;
+  u = u.trim().toLowerCase().replace(/\s+/g,'');
+  if (u.includes('@')) return u;
+  return u + DOMAIN_FAKE;
 }
 
 //  LOGIN 
@@ -1230,6 +1235,7 @@ async function doLogin() {
   try {
     const email = usernameToEmail(username);
     console.log('[LOGIN] Tentativo con email:', email);
+    console.log('[LOGIN] Email repr:', JSON.stringify(email), 'lunghezza:', email.length);
     const cred = await signInWithEmailAndPassword(auth, email, password);
     console.log('[LOGIN] Successo:', cred.user.uid);
     // onAuthStateChanged gestisce il resto
@@ -1471,6 +1477,8 @@ function adminRenderUsers() {
       <td>${u.sims}</td>
       <td><span class="admin-badge" style="background:${u.pass>0?'var(--success-light)':'var(--bg)'};color:${u.pass>0?'var(--success)':'var(--text-muted)'}">${u.pass}</span></td>
       <td>${fmt(u.lastSeen)}</td>
+      <td><button class="btn btn-outline" style="padding:4px 10px;font-size:0.78rem" onclick="resetUserPassword('${u.uid}','${u.username}')">Nuova password</button>
+          <button class="btn" style="padding:4px 10px;font-size:0.78rem;background:var(--error-light);color:var(--error);border:1px solid var(--error);margin-left:4px" onclick="deleteUser('${u.uid}','${u.username}')">Elimina</button></td>
     </tr>`).join('');
 };
 
@@ -1548,6 +1556,82 @@ async function exportCSV() {
   showToast(' Export scaricato!');
 };
 
+// -- ELIMINA UTENTE --
+async function deleteUser(uid, username) {
+  showModal(
+    'Elimina utente',
+    'Sei sicuro di voler eliminare ' + username + '? Verranno cancellati anche tutti i progressi. Questa azione non e reversibile.',
+    async () => {
+      try {
+        const token = await currentUser.getIdToken(true);
+        // Elimina da Firebase Authentication
+        const res = await fetch(
+          'https://identitytoolkit.googleapis.com/v1/accounts:delete?key=' + firebaseConfig.apiKey,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken: token, localId: uid })
+          }
+        );
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error?.message || 'Errore API');
+        }
+        // Elimina da Firestore
+        const { deleteDoc, doc: docRef } = await import('https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js');
+        await Promise.all([
+          deleteDoc(docRef(db, 'users', uid)),
+          deleteDoc(docRef(db, 'progress', uid))
+        ]);
+        showToast('Utente eliminato.');
+        adminLoadUsers();
+      } catch(e) {
+        showToast('Errore: ' + e.message);
+        console.error('[DELETE USER]', e);
+      }
+    },
+    true  // bottone rosso
+  );
+}
+
+// -- RESET PASSWORD UTENTE --
+async function resetUserPassword(uid, username) {
+  const newPass = Math.random().toString(36).slice(2, 8) +
+                  Math.random().toString(36).slice(2, 6).toUpperCase() +
+                  Math.floor(Math.random()*90+10);
+  try {
+    const token = await currentUser.getIdToken(true);
+    const res = await fetch(
+      'https://identitytoolkit.googleapis.com/v1/accounts:update?key=' + firebaseConfig.apiKey,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: token, localId: uid, password: newPass, returnSecureToken: false })
+      }
+    );
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'Errore API');
+    }
+    // Mostra risultato nel modal
+    showModal('Nuova password per ' + username, 'Premi Conferma per copiare le credenziali.', () => {
+      navigator.clipboard.writeText('Username: ' + username + '\nPassword: ' + newPass);
+      showToast('Credenziali copiate!');
+    }, false);
+    setTimeout(() => {
+      const mp = document.querySelector('.modal p');
+      if (mp) mp.innerHTML =
+        'Comunica all\'utente:<br><br>' +
+        '<strong>Username:</strong> ' + username + '<br>' +
+        '<strong>Password:</strong> <code style="background:#f0f4fb;padding:3px 10px;border-radius:6px;font-size:1.05rem;letter-spacing:0.05em">' + newPass + '</code><br><br>' +
+        '<small style="color:var(--text-muted)">Premi Conferma per copiare negli appunti.</small>';
+    }, 30);
+  } catch(e) {
+    showToast('Errore: ' + e.message);
+    console.error('[RESET PWD]', e);
+  }
+}
+
 //  AGGANCIO EVENTI (fix module scope) 
 document.getElementById('login-btn').addEventListener('click', () => {
   window._adminPassword = document.getElementById('login-password').value;
@@ -1558,6 +1642,8 @@ document.getElementById('user-chip').addEventListener('click', userChipMenu);
 
 // Rendi accessibili globalmente le funzioni chiamate dall'HTML del quiz (admin panel)
 window.adminTab = adminTab;
+window.resetUserPassword = resetUserPassword;
+window.deleteUser = deleteUser;
 window.adminLoadUsers = adminLoadUsers;
 window.adminRenderUsers = adminRenderUsers;
 window.generateCredentials = generateCredentials;
