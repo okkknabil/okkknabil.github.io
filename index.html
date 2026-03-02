@@ -1165,7 +1165,7 @@ function showToast(msg) {
 refreshHome();
 </script>
 
-<!-- ══ FIREBASE ══════════════════════════════════════════════════════════ -->
+<!--  FIREBASE  -->
 <script type="module">
 import { initializeApp }              from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
@@ -1186,17 +1186,17 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// ── COSTANTI ──
+//  COSTANTI 
 const ADMIN_UID    = "0gyslmOEPyU9i2ndw5Bhwjl2jKu1"; // sostituito dopo primo login admin
 const ADMIN_EMAIL  = "admin@ruoloquiz.app";
 const DOMAIN_FAKE  = "@ruoloquiz.app";
 
-// ── STATO GLOBALE ──
+//  STATO GLOBALE 
 let currentUser    = null;
 let currentProfile = null;
 let isAdmin        = false;
 
-// ── HELPERS UI ──
+//  HELPERS UI 
 function setLoginLoading(on) {
   const btn = document.getElementById('login-btn');
   btn.disabled = on;
@@ -1215,12 +1215,12 @@ function clearLoginError() {
   document.getElementById('login-err').classList.remove('show');
 }
 
-// ── USERNAME → EMAIL ──
+//  USERNAME  EMAIL 
 function usernameToEmail(u) {
   return u.trim().toLowerCase().replace(/\s+/g,'') + DOMAIN_FAKE;
 }
 
-// ── LOGIN ──
+//  LOGIN 
 async function doLogin() {
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
@@ -1244,7 +1244,7 @@ async function doLogin() {
   }
 };
 
-// Enter su password → login
+// Enter su password  login
 document.getElementById('login-password').addEventListener('keydown', e => {
   if (e.key === 'Enter') window.doLogin();
 });
@@ -1252,11 +1252,11 @@ document.getElementById('login-username').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('login-password').focus();
 });
 
-// ── AUTH STATE ──
+//  AUTH STATE 
 onAuthStateChanged(auth, async (user) => {
   console.log('[AUTH STATE]', user ? user.email : 'null');
   if (!user) {
-    // Non loggato → mostra overlay login
+    // Non loggato  mostra overlay login
     currentUser = null; currentProfile = null; isAdmin = false;
     document.getElementById('auth-overlay').style.display = 'flex';
     document.getElementById('auth-step-login').style.display = 'block';
@@ -1275,7 +1275,7 @@ onAuthStateChanged(auth, async (user) => {
   const snap = await getDoc(profileRef);
 
   if (!snap.exists() || !snap.data().profileComplete) {
-    // Primo accesso → mostra form profilo
+    // Primo accesso  mostra form profilo
     document.getElementById('auth-step-login').style.display = 'none';
     document.getElementById('auth-step-profile').style.display = 'block';
     document.getElementById('auth-overlay').style.display = 'flex';
@@ -1283,12 +1283,12 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // Profilo completo → entra nell'app
+  // Profilo completo  entra nell'app
   currentProfile = snap.data();
   enterApp();
 });
 
-// ── SALVA PROFILO ──
+//  SALVA PROFILO 
 async function saveProfile() {
   const nome     = document.getElementById('prof-nome').value.trim();
   const cognome  = document.getElementById('prof-cognome').value.trim();
@@ -1313,7 +1313,7 @@ async function saveProfile() {
     lastSeen: serverTimestamp(),
   });
 
-  // Migra localStorage → Firestore se esiste
+  // Migra localStorage  Firestore se esiste
   try {
     const local = JSON.parse(localStorage.getItem('quiz_vz_progress') || 'null');
     if (local) {
@@ -1326,7 +1326,7 @@ async function saveProfile() {
   enterApp();
 };
 
-// ── ENTRA NELL'APP ──
+//  ENTRA NELL'APP 
 function enterApp() {
   document.getElementById('auth-overlay').style.display = 'none';
   const chip = document.getElementById('user-chip');
@@ -1346,7 +1346,7 @@ function enterApp() {
   }
 }
 
-// ── CHIP MENU (logout / admin) ──
+//  CHIP MENU (logout / admin) 
 function userChipMenu() {
   const items = isAdmin
     ? [{ label: '🛡️ Pannello Admin', action: () => { showScreen('admin'); adminLoadUsers(); } },
@@ -1367,7 +1367,7 @@ function doLogout() {
   signOut(auth);
 }
 
-// ── PROGRESS SU FIRESTORE ──
+//  PROGRESS SU FIRESTORE 
 function overrideProgressFunctions() {
   window._fbLoadProgress = async function() {
     if (!currentUser) return initProgress();
@@ -1403,7 +1403,7 @@ function overrideProgressFunctions() {
   });
 }
 
-// ── ADMIN: CARICA UTENTI ──
+//  ADMIN: CARICA UTENTI 
 async function adminLoadUsers() {
   window._adminUsers = [];
   const tbody = document.getElementById('admin-users-body');
@@ -1454,7 +1454,7 @@ function adminRenderUsers() {
   document.getElementById('admin-users-count').textContent =
     `${users.length} utent${users.length === 1 ? 'e' : 'i'} trovati`;
 
-  const fmt = d => d ? d.toLocaleDateString('it-IT') : '—';
+  const fmt = d => d ? d.toLocaleDateString('it-IT') : '--';
   const tbody = document.getElementById('admin-users-body');
   if (users.length === 0) {
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">Nessun utente trovato.</td></tr>';
@@ -1464,17 +1464,17 @@ function adminRenderUsers() {
     <tr>
       <td><strong>${u.username}</strong></td>
       <td>${u.nome} ${u.cognome}</td>
-      <td>${u.email || '—'}</td>
-      <td>${u.tel || '—'}</td>
-      <td>${u.provincia || '—'}</td>
-      <td>${u.eta || '—'}</td>
+      <td>${u.email || '--'}</td>
+      <td>${u.tel || '--'}</td>
+      <td>${u.provincia || '--'}</td>
+      <td>${u.eta || '--'}</td>
       <td>${u.sims}</td>
       <td><span class="admin-badge" style="background:${u.pass>0?'var(--success-light)':'var(--bg)'};color:${u.pass>0?'var(--success)':'var(--text-muted)'}">${u.pass}</span></td>
       <td>${fmt(u.lastSeen)}</td>
     </tr>`).join('');
 };
 
-// ── ADMIN TABS ──
+//  ADMIN TABS 
 function adminTab(tab) {
   ['users','credentials','export'].forEach(t => {
     document.getElementById('admin-tab-'+t).style.display = t === tab ? '' : 'none';
@@ -1485,7 +1485,7 @@ function adminTab(tab) {
   if (tab === 'users') adminLoadUsers();
 };
 
-// ── GENERA CREDENZIALI ──
+//  GENERA CREDENZIALI 
 async function generateCredentials() {
   const prefix = document.getElementById('cred-prefix').value.trim()
     .toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
@@ -1527,11 +1527,11 @@ function copyCreds() {
 Password: ${p}`).then(() => showToast('📋 Copiato!'));
 };
 
-// ── EXPORT CSV ──
+//  EXPORT CSV 
 async function exportCSV() {
   await adminLoadUsers();
   const users = window._adminUsers || [];
-  const header = ['Username','Nome','Cognome','Email','Telefono','Provincia','Età','Simulazioni','Promozioni','Ultima attività','Registrazione'];
+  const header = ['Username','Nome','Cognome','Email','Telefono','Provincia','Eta','Simulazioni','Promozioni','Ultima attivita','Registrazione'];
   const rows = users.map(u => [
     u.username, u.nome, u.cognome, u.email, u.tel,
     u.provincia, u.eta, u.sims, u.pass,
@@ -1549,7 +1549,7 @@ async function exportCSV() {
   showToast('📥 Export scaricato!');
 };
 
-// ── AGGANCIO EVENTI (fix module scope) ──
+//  AGGANCIO EVENTI (fix module scope) 
 document.getElementById('login-btn').addEventListener('click', () => {
   window._adminPassword = document.getElementById('login-password').value;
   doLogin();
