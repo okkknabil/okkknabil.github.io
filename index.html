@@ -299,7 +299,9 @@
           <label class="form-label">Provincia</label>
           <select class="form-select" id="prof-provincia">
             <option value="">Seleziona...</option>
-            <option>Venezia</option>
+            <option>Venezia</option><option>Padova</option><option>Treviso</option>
+            <option>Vicenza</option><option>Verona</option><option>Rovigo</option>
+            <option>Belluno</option><option>Altra</option>
           </select>
         </div>
         <div class="form-group">
@@ -427,25 +429,67 @@
 
     <!-- TAB CREDENZIALI -->
     <div id="admin-tab-credentials" style="display:none">
-      <div class="big-card" style="max-width:520px">
-        <div class="card-title" style="margin-bottom:8px">Genera nuova utenza</div>
-        <div class="card-desc" style="margin-bottom:20px">Crea credenziali da condividere con un nuovo candidato. Username e password vengono generati automaticamente.</div>
-        <div class="form-group">
-          <label class="form-label">Prefisso username <span class="auth-optional">(opzionale)</span></label>
-          <input class="form-input" id="cred-prefix" type="text" placeholder="es. venezia → venezia.abc123" />
-        </div>
-        <button class="btn btn-primary" onclick="generateCredentials()">⚡ Genera credenziali</button>
-        <div id="cred-result" style="display:none" class="credential-box">
-          <div>
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">USERNAME</div>
-            <strong id="cred-username"></strong>
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;margin-bottom:4px">PASSWORD</div>
-            <strong id="cred-password"></strong>
+      <div class="big-card" style="max-width:560px">
+        <div class="card-title" style="margin-bottom:4px">Crea nuova utenza candidato</div>
+        <div class="card-desc" style="margin-bottom:22px">Inserisci nome, cognome e username. La password viene generata automaticamente. L'utente accede con username&nbsp;+&nbsp;password.</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nome</label>
+            <input class="form-input" id="cred-nome" type="text" placeholder="Mario" autocapitalize="words" />
           </div>
-          <button class="btn btn-outline" onclick="copyCreds()" style="flex-shrink:0"> Copia</button>
+          <div class="form-group">
+            <label class="form-label">Cognome</label>
+            <input class="form-input" id="cred-cognome" type="text" placeholder="Rossi" autocapitalize="words" />
+          </div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label">Username <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0">— cosa inserisce l'utente per accedere</span></label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input class="form-input" id="cred-username-input" type="text" placeholder="es. mario.rossi"
+              autocomplete="off" autocapitalize="none" style="flex:1" oninput="slugifyUsername(this)" />
+            <button type="button" class="btn btn-outline" style="flex-shrink:0;white-space:nowrap"
+              onclick="autoFillUsername()">&#8635; Auto</button>
+          </div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">Solo lettere, numeri e punto. Es: <code>mario.rossi</code></div>
+          <div class="form-error" id="cred-username-err"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+            Password generata automaticamente
+            <button type="button" onclick="refreshPassword()" style="background:none;border:none;cursor:pointer;font-size:0.78rem;color:var(--blue-light);font-family:inherit;padding:0">&#8635; Rigenera</button>
+          </label>
+          <input class="form-input" id="cred-password-preview" type="text" readonly style="font-family:monospace;letter-spacing:0.06em;background:var(--bg);cursor:default" />
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px" onclick="generateCredentials()">
+          &#9889; Crea utenza su Firebase
+        </button>
+
+        <div id="cred-result" style="display:none;margin-top:20px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:20px">
+          <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+            <div style="flex:1;min-width:180px">
+              <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:3px">Candidato</div>
+              <div style="font-weight:600;color:var(--navy);font-size:0.95rem" id="cred-display-nome"></div>
+              <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-top:10px;margin-bottom:3px">Username</div>
+              <div style="font-family:monospace;font-size:0.95rem;font-weight:700;color:var(--navy)" id="cred-display-username"></div>
+              <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-top:10px;margin-bottom:3px">Password</div>
+              <div style="font-family:monospace;font-size:1.05rem;font-weight:700;color:var(--blue-light)" id="cred-display-password"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+              <button class="btn btn-outline" onclick="copyCreds()">&#128203; Copia</button>
+              <button class="btn btn-gold" onclick="generateBrochurePDF()">&#128196; Brochure PDF</button>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:0.78rem;color:var(--success);font-weight:500">
+            &#10003; Utenza creata con successo su Firebase
+          </div>
+        </div>
+
         <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
-          <div class="card-title" style="font-size:1rem;margin-bottom:12px">Credenziali generate in questa sessione</div>
+          <div style="font-weight:600;font-size:0.92rem;color:var(--navy);margin-bottom:12px">Utenze create in questa sessione</div>
           <div id="cred-history" style="font-size:0.85rem;color:var(--text-muted)">Nessuna ancora.</div>
         </div>
       </div>
@@ -1179,6 +1223,9 @@ function showToast(msg) {
 refreshHome();
 </script>
 
+<!-- jsPDF per generazione brochure PDF lato client -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <!--  FIREBASE  -->
 <script type="module">
 import { initializeApp }              from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
@@ -1523,49 +1570,129 @@ function adminTab(tab) {
     b.classList.toggle('active', ['users','credentials','export'][i] === tab);
   });
   if (tab === 'users') adminLoadUsers();
-};
-
-//  GENERA CREDENZIALI 
-async function generateCredentials() {
-  const prefix = document.getElementById('cred-prefix').value.trim()
-    .toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
-  const rand   = Math.random().toString(36).slice(2, 7);
-  const username = `${prefix}.${rand}`;
-  const password = Math.random().toString(36).slice(2, 10) +
-                   Math.random().toString(36).slice(2, 5).toUpperCase();
-  const email = usernameToEmail(username);
-
-  try {
-    // Crea utente Firebase
-    await createUserWithEmailAndPassword(auth, email, password);
-    // Ri-logga come admin (createUser cambia l'utente corrente!)
-    await signInWithEmailAndPassword(auth, ADMIN_EMAIL,
-      window._adminPassword || prompt('Reinserisci password admin per continuare:'));
-
-    document.getElementById('cred-username').textContent = username;
-    document.getElementById('cred-password').textContent = password;
-    document.getElementById('cred-result').style.display = 'flex';
-
-    // Storico sessione
-    const hist = document.getElementById('cred-history');
-    if (hist.textContent.includes('Nessuna')) hist.innerHTML = '';
-    hist.innerHTML = `<div style="padding:6px 0;border-bottom:1px solid var(--border)">
-      <strong>${username}</strong> / ${password}
-      <span style="color:var(--text-muted);margin-left:8px">${new Date().toLocaleTimeString('it-IT')}</span>
-    </div>` + hist.innerHTML;
-
-    showToast(' Utenza creata!');
-  } catch(e) {
-    showToast(' Errore: ' + e.message);
+  if (tab === 'credentials') {
+    const pwEl = document.getElementById('cred-password-preview');
+    if (pwEl && !pwEl.value) pwEl.value = makePassword();
+    document.getElementById('cred-result').style.display = 'none';
   }
 };
 
-function copyCreds() {
-  const u = document.getElementById('cred-username').textContent;
-  const p = document.getElementById('cred-password').textContent;
-  navigator.clipboard.writeText(`Username: ${u}
-Password: ${p}`).then(() => showToast(' Copiato!'));
+//  GENERA CREDENZIALI
+function makePassword() {
+  const low='abcdefghjkmnpqrstuvwxyz', up='ABCDEFGHJKLMNPQRSTUVWXYZ', num='23456789';
+  let p='';
+  for(let i=0;i<5;i++) p+=low[Math.floor(Math.random()*low.length)];
+  p+=up[Math.floor(Math.random()*up.length)];
+  p+=num[Math.floor(Math.random()*num.length)];
+  p+=up[Math.floor(Math.random()*up.length)];
+  p+=num[Math.floor(Math.random()*num.length)];
+  return p;
+}
+window.refreshPassword = function() {
+  const el=document.getElementById('cred-password-preview');
+  if(el) el.value=makePassword();
 };
+window.slugifyUsername = function(el) {
+  const s=el.selectionStart;
+  el.value=el.value.toLowerCase().replace(/[^a-z0-9.]/g,'');
+  el.setSelectionRange(s,s);
+};
+window.autoFillUsername = function() {
+  const n=document.getElementById('cred-nome').value.trim()
+    .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+  const cog=document.getElementById('cred-cognome').value.trim()
+    .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');
+  const base=[n,cog].filter(Boolean).join('.')||'utente';
+  const rand=Math.random().toString(36).slice(2,5);
+  document.getElementById('cred-username-input').value=base+'.'+rand;
+};
+
+async function generateCredentials() {
+  const nome    = document.getElementById('cred-nome').value.trim();
+  const cognome = document.getElementById('cred-cognome').value.trim();
+  const username= document.getElementById('cred-username-input').value.trim().toLowerCase();
+  const password= document.getElementById('cred-password-preview').value.trim();
+  const errEl   = document.getElementById('cred-username-err');
+
+  errEl.classList.remove('show'); errEl.textContent='';
+  document.getElementById('cred-username-input').classList.remove('error');
+
+  if(!username || !/^[a-z0-9][a-z0-9.]*[a-z0-9]$/.test(username)) {
+    errEl.textContent='Username non valido. Usa solo lettere, numeri e punto (es: mario.rossi)';
+    errEl.classList.add('show');
+    document.getElementById('cred-username-input').classList.add('error');
+    return;
+  }
+  if(!password || password.length<6) { showToast('Attenzione: password troppo corta, rigenera'); return; }
+
+  // Firebase Auth richiede formato email — usiamo username@ruoloquiz.app (mai visibile all'utente)
+  const fakeEmail = usernameToEmail(username);
+
+  const btn=document.querySelector('#admin-tab-credentials .btn-primary');
+  btn.disabled=true;
+  btn.innerHTML='<span class="auth-spinner"></span>Creazione in corso…';
+
+  try {
+    await createUserWithEmailAndPassword(auth, fakeEmail, password);
+    const newUid=auth.currentUser?.uid;
+
+    if(newUid) {
+      await setDoc(doc(db,'users',newUid), {
+        username, nome, cognome,
+        email:'', createdAt:serverTimestamp(), firstLogin:true,
+      });
+    }
+
+    const adminPwd=window._adminPassword||prompt('Reinserisci la password admin per continuare:');
+    if(adminPwd) { window._adminPassword=adminPwd; await signInWithEmailAndPassword(auth,ADMIN_EMAIL,adminPwd); }
+
+    const nomeCompleto=[nome,cognome].filter(Boolean).join(' ')||'\u2014';
+    document.getElementById('cred-display-nome').textContent    =nomeCompleto;
+    document.getElementById('cred-display-username').textContent=username;
+    document.getElementById('cred-display-password').textContent=password;
+    document.getElementById('cred-result').style.display        ='block';
+
+    // Storico — usa addEventListener per evitare problemi di escape con apostrofi
+    const hist=document.getElementById('cred-history');
+    if(hist.textContent.trim()==='Nessuna ancora.') hist.innerHTML='';
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap';
+    row.innerHTML=
+      '<div><strong style="color:var(--navy)">'+(nomeCompleto!=='\u2014'?nomeCompleto+' \u2014 ':'')+
+      '<span style="font-family:monospace">'+username+'</span></strong>'+
+      '<span style="font-family:monospace;color:var(--text-muted);margin-left:8px">'+password+'</span></div>'+
+      '<div style="display:flex;gap:6px;align-items:center;flex-shrink:0">'+
+      '<span style="font-size:0.75rem;color:var(--text-muted)">'+new Date().toLocaleTimeString('it-IT')+'</span>'+
+      '<button class="btn btn-outline" style="padding:4px 10px;font-size:0.75rem">PDF</button></div>';
+    // Attach PDF via closure — nessun inline string, nessun problema di escape
+    const _u=username,_p=password,_n=nome,_cog=cognome;
+    row.querySelector('button').addEventListener('click',()=>_doBrochurePDF(_u,_p,_n,_cog));
+    hist.insertBefore(row,hist.firstChild);
+
+    document.getElementById('cred-nome').value='';
+    document.getElementById('cred-cognome').value='';
+    document.getElementById('cred-username-input').value='';
+    refreshPassword();
+    showToast('\u2713 Utenza creata: '+username);
+  } catch(e) {
+    if(e.code==='auth/email-already-in-use') {
+      errEl.textContent='Username gi\u00e0 in uso. Scegli un username diverso.';
+      errEl.classList.add('show');
+      document.getElementById('cred-username-input').classList.add('error');
+    } else { showToast('\u2717 Errore: '+e.message); console.error('[generateCredentials]',e); }
+  } finally {
+    btn.disabled=false; btn.innerHTML='&#9889; Crea utenza su Firebase';
+  }
+}
+
+function copyCreds() {
+  const u=document.getElementById('cred-display-username').textContent.trim();
+  const p=document.getElementById('cred-display-password').textContent.trim();
+  const n=document.getElementById('cred-display-nome').textContent.trim();
+  const lines=[n&&n!=='—'?'Candidato: '+n:null,'Username: '+u,'Password: '+p,'Sito: quiz-patente-ncc.it']
+    .filter(Boolean).join('\n');
+  navigator.clipboard.writeText(lines).then(()=>showToast('Copiato negli appunti!'));
+}
 
 //  EXPORT CSV 
 async function exportCSV() {
@@ -1667,6 +1794,157 @@ window.generateCredentials = generateCredentials;
 window.copyCreds = copyCreds;
 window.exportCSV = exportCSV;
 window.userChipMenu = userChipMenu;
+
+
+// ══════════════════════════════════════════════════════════════════
+//  GENERA BROCHURE PDF
+// ══════════════════════════════════════════════════════════════════
+// ── PDF BROCHURE ──────────────────────────────────────────────────────────────
+window.generateBrochurePDF = function() {
+  const u=document.getElementById('cred-display-username').textContent.trim();
+  const p=document.getElementById('cred-display-password').textContent.trim();
+  const raw=document.getElementById('cred-display-nome').textContent.trim();
+  const pts=raw!=='\u2014'?raw.split(' '):[];
+  _doBrochurePDF(u,p,pts[0]||'',pts.slice(1).join(' ')||'');
+};
+
+function _doBrochurePDF(username,password,nome,cognome) {
+  if(!username||!password){showToast('Prima genera le credenziali');return;}
+  const nC=[nome,cognome].filter(Boolean).join(' ').toUpperCase()||null;
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const W=297,H=210,PW=W/4,PAD=6;
+
+  const NAVY=[10,31,60],BLUE=[27,58,107],AZURE=[43,127,212],LAZUR=[91,163,232];
+  const GOLD=[232,168,32],WHT=[255,255,255],LGR=[240,244,248],MGR=[142,168,195];
+  const DKT=[26,43,60],RED=[192,57,43],GRN=[26,122,74];
+
+  const sf=c=>doc.setFillColor(...c);
+  const sd=c=>doc.setDrawColor(...c);
+  const st=c=>doc.setTextColor(...c);
+  const rct=(x,y,w,h,r)=>r?doc.roundedRect(x,y,w,h,r,r,'F'):doc.rect(x,y,w,h,'F');
+
+  function grad(x,y,w,h,c1,c2,n=35){
+    const sh=h/n;
+    for(let i=0;i<n;i++){
+      const t=i/n;
+      doc.setFillColor(Math.round(c1[0]+(c2[0]-c1[0])*t),Math.round(c1[1]+(c2[1]-c1[1])*t),Math.round(c1[2]+(c2[2]-c1[2])*t));
+      doc.rect(x,y+i*sh,w,sh+0.3,'F');
+    }
+  }
+  const cT=(t,cx,y,sz,col,b=false)=>{doc.setFontSize(sz);doc.setFont('helvetica',b?'bold':'normal');st(col);doc.text(t,cx,y,{align:'center'});};
+  const lT=(t,x,y,sz,col,b=false)=>{doc.setFontSize(sz);doc.setFont('helvetica',b?'bold':'normal');st(col);doc.text(t,x,y);};
+  const wT=(t,x,y,mw,sz,col,b=false,lh=4.5)=>{doc.setFontSize(sz);doc.setFont('helvetica',b?'bold':'normal');st(col);const ls=doc.splitTextToSize(t,mw);doc.text(ls,x,y);return y+ls.length*lh;};
+  const hl=(x,y,w,col,lw=0.3)=>{doc.setLineWidth(lw);sd(col);doc.line(x,y,x+w,y);};
+
+  // PANEL 4 - COVER
+  const p4=PW*3;
+  grad(p4,0,PW,H,NAVY,BLUE);
+  doc.setFillColor(43,127,212);doc.setGState(new doc.GState({opacity:0.15}));
+  doc.circle(p4+PW*0.82,H*0.17,30,'F');doc.circle(p4+PW*0.15,H*0.85,22,'F');
+  doc.setGState(new doc.GState({opacity:1}));
+  sf(GOLD);rct(p4,0,PW,7);cT('PROVINCIA \u00b7 RUOLO CONDUCENTE \u00b7 NCC',p4+PW/2,4.8,6,NAVY,true);
+  const bx=p4+PW/2,by=H*0.31;
+  sf(AZURE);doc.roundedRect(bx-13,by-5,26,12,1.5,1.5,'F');
+  sf(WHT);doc.setGState(new doc.GState({opacity:0.85}));
+  for(let i=0;i<3;i++)doc.roundedRect(bx-9+i*7,by-2.5,5,4,0.5,0.5,'F');
+  doc.setGState(new doc.GState({opacity:1}));
+  sf(NAVY);doc.circle(bx-7,by+8.5,2.3,'F');doc.circle(bx+7,by+8.5,2.3,'F');
+  cT('QUIZ PATENTE',p4+PW/2,H*0.52,20,WHT,true);
+  cT('CONDUCENTE NCC',p4+PW/2,H*0.585,10.5,GOLD,true);
+  hl(p4+PW*0.22,H*0.615,PW*0.56,AZURE,1.2);
+  cT('Trasporti Pubblici Non di Linea',p4+PW/2,H*0.655,8.5,MGR);
+  cT('Ruolo Conducente \u2013 Via Terra',p4+PW/2,H*0.69,8.5,MGR);
+  doc.setFillColor(43,127,212);doc.setGState(new doc.GState({opacity:0.18}));
+  rct(p4+PAD,H*0.725,PW-2*PAD,9,2.5);doc.setGState(new doc.GState({opacity:1}));
+  cT('La preparazione piu efficace per l\'esame',p4+PW/2,H*0.755,8,WHT,true);
+  cT('IL TUO ACCESSO PERSONALE',p4+PW/2,H*0.805,7.5,GOLD,true);
+  doc.setFillColor(255,255,255);doc.setGState(new doc.GState({opacity:0.09}));
+  rct(p4+PAD,H*0.83,PW-2*PAD,H*0.135,3);doc.setGState(new doc.GState({opacity:1}));
+  cT('Username',p4+PW/2,H*0.855,7,MGR);cT(username,p4+PW/2,H*0.877,9.5,WHT,true);
+  hl(p4+PAD*1.8,H*0.892,PW-3.6*PAD,AZURE,0.35);
+  cT('Password',p4+PW/2,H*0.908,7,MGR);cT(password,p4+PW/2,H*0.932,9.5,GOLD,true);
+  if(nC)cT(nC,p4+PW/2,H*0.965,7,MGR,true);
+
+  // PANEL 3 - COME FUNZIONA
+  const p3=PW*2;
+  grad(p3,0,PW,H,LGR,[255,255,255]);grad(p3,0,PW,20,BLUE,NAVY);
+  cT('COME FUNZIONA',p3+PW/2,9,9.5,GOLD,true);cT('Cinque passi verso l\'esame',p3+PW/2,14,7,WHT);
+  const steps=[
+    ['01','Accedi alla piattaforma','Usa le credenziali personali stampate su questa brochure per entrare.'],
+    ['02','Scegli il modulo','Seleziona l\'argomento: normativa, sicurezza, comportamento e altro.'],
+    ['03','Rispondi ai quiz','Domande a risposta multipla fedeli al format d\'esame ufficiale.'],
+    ['04','Analizza i risultati','Vedi subito dove hai sbagliato e studia le spiegazioni dettagliate.'],
+    ['05','Ripassa e supera','Ripeti finche non sei pronto. Poi affronta l\'esame con sicurezza.'],
+  ];
+  let sy=26;const sH=(H-36)/5.3;
+  for(const[n,ti,de]of steps){
+    sf(AZURE);doc.circle(p3+PAD+4.5,sy+1,4.5,'F');cT(n,p3+PAD+4.5,sy+2.5,7,WHT,true);
+    lT(ti,p3+PAD+12,sy+2,8.5,NAVY,true);
+    doc.setFontSize(7.2);doc.setFont('helvetica','normal');st([74,96,128]);
+    doc.text(doc.splitTextToSize(de,PW-PAD-13),p3+PAD+12,sy+6.5);sy+=sH;
+  }
+  sf(AZURE);rct(p3+PAD,H-13,PW-2*PAD,9,2.5);cT('quiz-patente-ncc.it',p3+PW/2,H-7.8,9,WHT,true);
+
+  // PANEL 2 - PERCHE USARLA
+  const p2=PW;
+  sf(WHT);rct(p2,0,PW,H);grad(p2,0,PW,20,NAVY,BLUE);
+  cT('PERCHE\' USARLA?',p2+PW/2,9,9.5,GOLD,true);cT('Piu efficace delle dispense cartacee',p2+PW/2,14,7,WHT);
+  const cw=(PW-2*PAD-3)/2,cx1=p2+PAD,cx2=p2+PAD+cw+3;let cy=24;
+  sf(NAVY);rct(cx1,cy-5.5,cw,5.5,1.2);cT('DISPENSE',cx1+cw/2,cy-1.8,7,WHT,true);
+  sf(AZURE);rct(cx2,cy-5.5,cw,5.5,1.2);cT('QUIZ APP \u2605',cx2+cw/2,cy-1.8,7,WHT,true);
+  const comps=[['Testo statico','Quiz interattivi'],['Nessun feedback','Correzione immediata'],
+    ['Difficile portare','Sempre con te'],['Lettura passiva','Ripetizioni intelligenti'],
+    ['Nessuna statistica','Progressi in tempo reale'],['Studi tutto uguale','Focus sulle lacune']];
+  const rh=6.8;
+  for(let i=0;i<comps.length;i++){
+    const ry=cy+i*rh;
+    if(i%2===0){doc.setFillColor(245,248,252);rct(p2+PAD,ry,PW-2*PAD,rh);}
+    doc.setFontSize(6.8);doc.setFont('helvetica','normal');
+    st(RED);doc.text('x  '+comps[i][0],cx1+1,ry+rh-2.2);
+    st(GRN);doc.setFont('helvetica','bold');doc.text('v  '+comps[i][1],cx2+1,ry+rh-2.2);
+  }
+  const fy=cy+comps.length*rh+4;
+  doc.setFillColor(10,31,60);doc.setGState(new doc.GState({opacity:0.06}));
+  rct(p2+PAD,fy,PW-2*PAD,14,2.5);doc.setGState(new doc.GState({opacity:1}));
+  cT('\u2605  Domande reali d\'esame aggiornate  \u2605',p2+PW/2,fy+5.5,8,GOLD,true);
+  cT('Contenuti allineati al programma',p2+PW/2,fy+9,7.2,DKT);
+  cT('ufficiale della Provincia',p2+PW/2,fy+12.5,7.2,DKT);
+  doc.setFontSize(6.8);doc.setFont('helvetica','italic');st(MGR);
+  doc.text('Accessibile da smartphone, tablet e PC',p2+PW/2,H-5,{align:'center'});
+
+  // PANEL 1 - RETRO
+  grad(0,0,PW,H,BLUE,NAVY);
+  doc.setFillColor(43,127,212);doc.setGState(new doc.GState({opacity:0.13}));
+  doc.circle(PW*0.2,H*0.18,28,'F');doc.circle(PW*0.88,H*0.82,20,'F');
+  doc.setGState(new doc.GState({opacity:1}));
+  sf(GOLD);rct(0,0,PW,7);cT('PROVINCIA \u00b7 RUOLO CONDUCENTE \u00b7 NCC',PW/2,4.8,6,NAVY,true);
+  cT("COS'\u00c8 QUIZ PATENTE NCC?",PW/2,16,9.5,GOLD,true);hl(PAD,18.5,PW-2*PAD,AZURE,0.6);
+  const intro="Quiz Patente NCC e la piattaforma digitale pensata per chi si prepara all'esame per il Ruolo Conducente nei trasporti pubblici non di linea via terra.";
+  let tY=wT(intro,PAD,24,PW-2*PAD,8,WHT,false,4.5);tY+=5;
+  lT('COSA INCLUDE:',PAD,tY,8.5,GOLD,true);tY+=5;
+  const feats=['Centinaia di domande aggiornate','Simulazione esame cronometrata','Statistiche e progressi personali','Ripetizione intelligente degli errori','Multipiattaforma: web, mobile, tablet','Accesso privato con credenziali dedicate'];
+  for(const f of feats){doc.setFontSize(7.8);doc.setFont('helvetica','normal');st(WHT);doc.text('>>  '+f,PAD+2,tY);tY+=4.8;}
+  tY+=4;const bh=26;
+  doc.setFillColor(255,255,255);doc.setGState(new doc.GState({opacity:0.1}));
+  doc.roundedRect(PAD,tY,PW-2*PAD,bh,3,3,'F');doc.setGState(new doc.GState({opacity:1}));
+  cT('LE TUE CREDENZIALI DI ACCESSO',PW/2,tY+5.5,8,GOLD,true);
+  hl(PAD*1.8,tY+8,PW-3.6*PAD,AZURE,0.35);
+  lT('Username:',PAD+3,tY+13,7,MGR);doc.setFontSize(9.5);doc.setFont('helvetica','bold');st(WHT);doc.text(username,PAD+24,tY+13);
+  hl(PAD*1.8,tY+15.5,PW-3.6*PAD,AZURE,0.3);
+  lT('Password:',PAD+3,tY+20,7,MGR);doc.setFontSize(9.5);doc.setFont('helvetica','bold');st(GOLD);doc.text(password,PAD+24,tY+20);
+  if(nC){doc.setFontSize(7);doc.setFont('helvetica','bold');st(MGR);doc.text(nC,PW/2,tY+bh-1,{align:'center'});}
+  cT('quiz-patente-ncc.it',PW/2,H-9,8,LAZUR,true);cT('info@quiz-patente-ncc.it',PW/2,H-5,7,MGR);
+
+  // fold lines
+  doc.setDrawColor(180,180,180);doc.setLineWidth(0.25);doc.setLineDash([1.5,3]);
+  for(let i=1;i<=3;i++)doc.line(PW*i,0,PW*i,H);
+  doc.setLineDash([]);
+
+  doc.save('brochure_'+username.replace(/[^a-z0-9._-]/gi,'_')+'.pdf');
+  showToast('Brochure PDF scaricata!');
+}
 
 </script>
 </body>
