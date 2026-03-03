@@ -105,8 +105,8 @@
   .question-text { font-size: 1.1rem; font-weight: 500; color: var(--navy); margin-bottom: 24px; line-height: 1.55; }
 
   .options-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-  .option-btn { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 14px 18px; text-align: left; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--text); transition: all 0.18s; display: flex; align-items: flex-start; gap: 12px; line-height: 1.45; width: 100%; }
-  .option-btn:hover:not(:disabled) { border-color: var(--blue-light); background: #eef3fb; transform: translateX(4px); }
+  .option-btn { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 14px 18px; text-align: left; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--text); transition: all 0.18s; display: flex; align-items: flex-start; gap: 12px; line-height: 1.45; width: 100%; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+  @media (hover: hover) { .option-btn:hover:not(:disabled) { border-color: var(--blue-light); background: #eef3fb; transform: translateX(4px); } }
   .option-btn.selected { border-color: var(--blue-light); background: #ddeafb; }
   .option-btn.correct { border-color: var(--success); background: var(--success-light); color: var(--success); }
   .option-btn.wrong { border-color: var(--error); background: var(--error-light); color: var(--error); }
@@ -865,7 +865,20 @@ function renderQuiz() {
       if (quiz.answers[idx] === oi + 1) btn.classList.add('selected');
     }
     btn.innerHTML = `<span class="option-label">${label}</span><span>${q.options[oi]}</span>`;
-    if (!quiz.submitted) btn.onclick = () => selectAnswer(oi + 1);
+    if (!quiz.submitted) {
+      let _tapped = false;
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (_tapped) return;
+        _tapped = true;
+        selectAnswer(oi + 1);
+        setTimeout(() => { _tapped = false; }, 300);
+      }, { passive: false });
+      btn.addEventListener('click', (e) => {
+        if (_tapped) return;
+        selectAnswer(oi + 1);
+      });
+    }
     optContainer.appendChild(btn);
   });
 
